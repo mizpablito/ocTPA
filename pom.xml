@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>dev.mizio.mcPlugins</groupId>
+    <artifactId>ocTPA</artifactId>
+    <version>1.0.1</version>
+    <packaging>jar</packaging>
+
+    <name>ocTPA</name>
+
+    <properties>
+        <java.version>21</java.version>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <build>
+        <defaultGoal>clean package</defaultGoal>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.14.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <compilerArgs>
+                        <arg>-parameters</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.6.1</version>
+                <configuration>
+                    <dependencyReducedPomLocation>${project.build.directory}/dependency-reduced-pom.xml</dependencyReducedPomLocation>
+<!--                    <relocations>-->
+<!--                        <relocation>-->
+<!--                            <pattern>co.aikar.commands</pattern>-->
+<!--                            <shadedPattern>${project.groupId}.${project.artifactId}.acf</shadedPattern>-->
+<!--                        </relocation>-->
+<!--                        <relocation>-->
+<!--                            <pattern>co.aikar.locales</pattern>-->
+<!--                            <shadedPattern>${project.groupId}.${project.artifactId}.locales</shadedPattern>-->
+<!--                        </relocation>-->
+<!--                    </relocations>-->
+                </configuration>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+    </build>
+
+    <repositories>
+        <repository>
+            <id>papermc-repo</id>
+            <url>https://repo.papermc.io/repository/maven-public/</url>
+        </repository>
+<!--        <repository>-->
+<!--            <id>aikar</id>-->
+<!--            <url>https://repo.aikar.co/content/groups/aikar/</url>-->
+<!--        </repository>-->
+        <repository>
+            <id>codemc-releases</id>
+            <url>https://repo.codemc.io/repository/maven-public/</url>
+        </repository>
+        <repository>
+            <id>reposilite-repository-releases</id>
+            <name>Reposilite Repository</name>
+            <url>https://repo.panda-lang.org/releases</url>
+        </repository>
+    </repositories>
+
+    <dependencies>
+        <dependency>
+            <groupId>io.papermc.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.21.10-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
+        </dependency>
+<!--        <dependency>-->
+<!--            <groupId>co.aikar</groupId>-->
+<!--            <artifactId>acf-paper</artifactId>-->
+<!--            <version>0.5.1-SNAPSHOT</version>-->
+<!--        </dependency>-->
+
+        <dependency>
+            <groupId>dev.rollczi</groupId>
+            <artifactId>litecommands-bukkit</artifactId>
+            <version>3.10.6</version>
+        </dependency>
+        <dependency>
+            <groupId>dev.rollczi</groupId>
+            <artifactId>litecommands-adventure</artifactId>
+            <version>3.10.6</version>
+        </dependency>
+        <dependency>
+            <groupId>net.kyori</groupId>
+            <artifactId>adventure-text-minimessage</artifactId>
+            <version>4.25.0</version>
+        </dependency>
+        <dependency>
+            <groupId>net.tnemc</groupId>
+            <artifactId>EconomyCore</artifactId>
+            <version>0.1.4.1-SNAPSHOT-3</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.42</version>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

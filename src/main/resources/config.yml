@@ -1,0 +1,133 @@
+#           ___________  ___
+#          |_   _| ___ \/ _ \
+#   ___   ___| | | |_/ / /_\ \
+#  / _ \ / __| | |  __/|  _  |
+# | (_) | (__| | | |   | | | |
+#  \___/ \___\_/ \_|   \_| |_/
+#
+# Author: Miź Pablito (https://mizio.dev/)
+#
+
+## PODSTAWOWE USTAWIENIA
+plugin-debug: true
+# Można go użyć w tłumaczeniach jako tag <prefix>
+plugin-prefix: "<gold>[<dark_green>oc<white>TegesTeleport<gold>]"
+# Można go użyć w tłumaczeniach jako tag <miniprefix>
+plugin-mini-prefix: "<gold>[<dark_green>TP</dark_green>]"
+
+teleportation-settings:
+  cmd-enabled:
+    tpreturn: true
+    tphere: true
+  # czas podany w sekundach
+  times:
+    timeout:
+      # Czas na zaakceptowanie żądania
+      acceptance: 60
+      # Czas w którym można wrócić do poprzedniej lokalizacji
+      return: 60
+    cooldown:
+      # Czas opóźnienia TP po akceptacji
+      after-accept: 10
+      # Czas przez jaki nie będzie można ponownie użyć komendy
+      reuse-cmd-tpa: 60
+      reuse-cmd-tpaHere: 60
+  # TODO:
+  # - do wdrożenia w kolejnej iteracji, jeśli będzie potrzebne
+  #  # Zabroń teleportacji dla wskazanych światów
+  #  disabled-worlds:
+  #    - 'disabledworld'
+
+  # koszt teleportacji
+  cost:
+    enabled: true
+    currency: "vTegesy"
+    amount: 10
+    return-amount: 20
+
+
+## Efekty audio-wizualne teleportacji
+# Nazwy dźwięków: https://jd.papermc.io/paper/1.21.10/org/bukkit/Sound.html#field-summary
+# Nazwy cząsteczek: https://jd.papermc.io/paper/1.21.10/org/bukkit/Particle.html#enum-constant-summary
+# Nazwy efektów potek: https://jd.papermc.io/paper/1.21.10/org/bukkit/potion/PotionEffectType.html#field-summary
+teleportation-effects:
+  sound:
+    enabled: true
+    name: "entity.experience_orb.pickup"
+    volume: 3.0
+    pitch: 0.5
+  particle:
+    enabled: true
+    name: "EXPLOSION_NORMAL"
+    count: 60
+  potionEffect:
+    enabled: false
+    name: "BLINDNESS"
+    duration: 40
+    amplifier: 1
+    ambient: false
+    particles: false
+    icon: false
+
+## Tłumaczenia
+# Użyteczny tool: https://webui.advntr.dev/
+translation:
+  request-sent: "<green>Prośba o teleport została wysłana do <gold>%playername%</gold>. Gracz ma <gold>%seconds% sekund</gold> na jej zaakceptowanie."
+  request-return: "<prefix><green>Nastąpił powrót do ostatniej lokalizacji."
+  request-received: "<green>Otrzymano prośbę o teleport od <gold>%playername%</gold>, która wygaśnie za <gold>%seconds% sekund</gold>."
+  request-accept: "<yellow>Wpisz (<i>lub kliknij</i>) <dark_green><click:run_command:'/tpakceptuje'>/tpakceptuje</click></dark_green> aby zaakceptować prośbę."
+  request-deny: "<yellow>Wpisz (<i>lub kliknij</i>) <dark_red><click:run_command:'/tpodrzucam'>/tpodrzucam</click></dark_red> aby odrzucić prośbę."
+  request-denied-by: "<prefix><red>Teleportacja została odrzucona przez <gold>%playername%</gold>."
+  request-denied: "<prefix><red>Prośba o teleport od <gold>%playername%</gold> została odrzucona."
+  request-warning-tpa-here: "<dark_red>Uwaga:</dark_red> <red>zaakceptowanie tej prośby spowoduje teleportację do <gold>%playername%</gold>."
+  request-accepted: "<prefix><green>Prośba o teleport od <gold>%playername%</gold> została zaakceptowana."
+  request-canceled: "<prefix><yellow>Teleportacja została anulowana."
+  request-canceled-by: "<prefix><red>Teleportacja została anulowana przez <gold>%playername%</gold>."
+  request-moved-to: "<prefix><yellow>Teleportacja do <gold>%playername%</gold> została anulowana z powodu ruchu."
+  request-moved-from: "<prefix><yellow>Teleportacja została anulowana, ponieważ <gold>%playername%</gold> się poruszył."
+  request-moved-return: "<prefix><yellow>Teleportacja została anulowana z powodu ruchu."
+  request-timeout-to: "<prefix><blue>Prośba o teleport do <gold>%playername%</gold> wygasła."
+  request-timeout-from: "<prefix><blue>Prośba o teleport od <gold>%playername%</gold> wygasła."
+  request-teleported-to: "<prefix><green>Teleportacja do <gold>%playername%</gold> zakończona."
+  request-teleported-from: "<prefix><gold>%playername% <green>został przeteleportowany."
+  request-cooldown-to: "<prefix><yellow>Należy pozostać nieruchomo przez <red>%time% sekund</red>, aby nastąpiła teleportacja do <gold>%playername%</gold>."
+  request-cooldown-to-here: "<prefix>Należy pozostać nieruchomo przez %time% sekund, aby %playername% został przeteleportowany."
+  request-cooldown-from: "<prefix><gold>%playername% <yellow>zostanie przeteleportowany w ciągu <red>%time% sekund</red>."
+  request-cooldown-from-here: "<prefix>Teleportacja do %playername% nastąpi w ciągu %time% sekund."
+  request-cooldown-return: "<prefix>Powrót nastąpi za %time% sekund. Należy pozostać nieruchomo."
+  request-error-not-found: "<prefix><yellow>Brak oczekujących próśb."
+  request-error-not-found-by: "<prefix><yellow>Brak oczekującej prośby od %playername%."
+  request-error-return-not-found: "<prefix><yellow>Brak miejsca powrotu lub czas wygasł."
+  request-error-cooldown: "<prefix><red>Należy poczekać <yellow>%seconds% sekund</yellow> przed wysłaniem kolejnej prośby o teleport."
+  request-error-pending: "<prefix><red>Istnieje już oczekująca prośba."
+  request-canceled-not-enough-money-from: "<prefix><red>Teleportacja została anulowana z powodu niewystarczającej ilości kasy na konice <gold>%playername%</gold>"
+  request-canceled-not-enough-money-to: "<prefix><red>Teleportacja do <gold>%playername%</gold> została anulowana z powodu niewystarczającej ilości kasy na Twoim koncie!"
+  economy-not-enough-money: "<prefix><red>Koszt teleportacji to <gold>%cost%</gold>. Nie posiadasz tyle na koncie!"
+  economy-not-enough-money-after-accepted: "<prefix><red>Żądanie teleportacji zostało zaakceptowane, ale w między czasie zmienił się Twój stan konta i nie posiadasz wystarczającej kwoty - <gold>%cost%</gold>"
+  economy-error-while-processing-costs: "<prefix><dark_red>Wystąpił błąd podczas próby pobrania kosztu teleportacji! <red>Jeśli problem się powtarza, zgłość go do administracji!"
+  economy-service-not-loaded: "<prefix><dark_red>Serwis obsługujący koszty teleportacji jest wyłączony."
+  economy-withdraw-success: "<prefix><green>Za teleportację pobrano <gold>%cost%</gold>. Na Twoim koncie pozostało <gold>%balance%</gold>."
+
+  #Pozostałe
+  header-line: "<prefix><yellow><bold>==============================="
+  footer-line: "" #"<yellow><bold>============================================="
+  feature-disabled: "<prefix><red>Ta funkcja jest aktualnie wyłączona!"
+  tp-to-himself: "<prefix><red>Nie możesz teleportować się sam do siebie, bo po co!?"
+  help-cmd-oneline: "<prefix><red>Błędne użycie komendy <yellow>%command%</yellow> !"
+  help-cmd-multiline-header: "<prefix><red>Błędne użycie komendy!"
+  help-cmd-multiline-command: "<dark_gray> - <yellow>%command%"
+  ## Tłumaczenie frameworku komend
+  player-only: "<prefix><red>Tylko gracz może wykonać tą komendę!"
+  player-not-found: "<prefix><red>Nie znaleziono gracza online o nazwie <gold>%s"
+  offlinePlayer-not-found: "<prefix><red>Nie znaleziono gracza o nazwie <gold>%s"
+  namespaced-key-invalid: "<prefix><red>Klucz przestrzeni nazw <dark_gray>(Namespaced key)</dark_gray> jest nieprawidłowy!"
+  console-only: "<prefix><red>Tylko konsola może wykonać tą komendę!"
+  location-invalid-format: "<prefix><red>Invalid location format '%s'! Use: <x> <y> <z>"
+  location-no-console: "<prefix><red>Konsola nie może wykonać tego polecenia!"
+  world-not-exist: "<prefix><red>Świat %s nie istnieje!"
+  missing-permission: "<prefix><red>Nie posiadasz uprawnień do tej komendy! <dark_gray>(%s)"
+  invalid-number: "<prefix><red>'%s' nie jest liczbą!"
+  invalid-usage: "<prefix><red>Błędne użycie komendy!"
+  instant-invalid-format: "<prefix><red>Invalid date format '%s'! Use: <yyyy-MM-dd> <HH:mm:ss>"
+  command-cooldown: "<prefix><red>Nie tak szybko! <yellow>Pozostały czas: "
+  uuid-invalid-format: "<prefix><red>Nieprawidłowy format UUID '%s'! Użyj: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxx (myślniki są opcjonalne)"

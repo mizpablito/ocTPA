@@ -1,0 +1,56 @@
+name: ${project.artifactId}
+version: '${project.version}'
+main: dev.mizio.mcPlugins.ocTPA.MainOcTPA
+api-version: '1.21'
+authors:
+  - MizPablito
+website: https://mizio.dev
+
+softdepend:
+  - TheNewEconomy
+#  - PlaceholderAPI
+
+#commands:
+#  tpa:
+#    description: Wysyła prośbę o teleportację do wskazanej osoby.
+##    aliases: [ teleportacja ]
+#  tpakceptuje:
+#    description: Akceptacja prośby o teleportację.
+##    aliases: [ tpaccept ]
+#  tpodrzucam:
+#    description: Odrzucenie prośby o teleportację.
+##    aliases: [ tpdeny ]
+#  tpanuluj:
+#    description: Anulowanie prośby o teleportację.
+##    aliases: [ tpcancel ]
+##  /octpa:
+##    description: Komenda administracyjna do zarządzania pluginem.
+
+permissions:
+  octpa.cmd.tpa:
+    default: false
+    description: Zezwala na użycie komendy /tpa
+  octpa.cmd.accept:
+    default: false
+    description: Zezwala na użycie komendy /tpakceptuje
+  octpa.cmd.deny:
+    default: false
+    description: Zezwala na użycie komendy /tpodrzucam
+  octpa.cmd.cancel:
+    default: false
+    description: Zezwala na użycie komendy /tpanuluj
+  octpa.cmd.here:
+    default: false
+    description: Zezwala na użycie komendy /tphere
+  octpa.cmd.return:
+    default: false
+    description: Zezwala na użycie komendy /tpreturn
+#  octpa.cmd.admin:
+#    default: false
+#    description: Zezwala na użycie komendy //octpa
+  octpa.bypass.cooldown:
+    default: op
+    description: Zezwala ominąć czas oczekiwania na teleportację
+  octpa.bypass.return-timeout:
+    default: op
+    description: Umożliwia graczowi ominięcie limitu czasu powrotu (limit czasu nie będzie już naliczany)
