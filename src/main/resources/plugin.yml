@@ -29,22 +29,22 @@ softdepend:
 permissions:
   octpa.cmd.tpa:
     default: false
-    description: Zezwala na użycie komendy /tpa
+    description: Zezwala na użycie komendy /teleportacja
   octpa.cmd.accept:
     default: false
-    description: Zezwala na użycie komendy /tpakceptuje
+    description: Zezwala na użycie komendy /teleportacja tak
   octpa.cmd.deny:
     default: false
-    description: Zezwala na użycie komendy /tpodrzucam
+    description: Zezwala na użycie komendy /teleportacja nie
   octpa.cmd.cancel:
     default: false
-    description: Zezwala na użycie komendy /tpanuluj
+    description: Zezwala na użycie komendy /teleportacja anuluj
   octpa.cmd.here:
     default: false
     description: Zezwala na użycie komendy /tphere
   octpa.cmd.return:
     default: false
-    description: Zezwala na użycie komendy /tpreturn
+    description: Zezwala na użycie komendy /teleportacja powrot
 #  octpa.cmd.admin:
 #    default: false
 #    description: Zezwala na użycie komendy //octpa

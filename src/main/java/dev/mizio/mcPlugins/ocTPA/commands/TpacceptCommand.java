@@ -13,7 +13,7 @@ import static dev.mizio.mcPlugins.ocTPA.PluginConfig.PERMS_CMD_TPACCEPT;
 /**
  * Komenda akceptująca teleportację przez docelowego gracza
  */
-@Command(name = "tpakceptuje", aliases = {"tpaccept"} )
+@Command(name = "tpakceptuje")
 @Permission(PERMS_CMD_TPACCEPT)
 public class TpacceptCommand {
 
@@ -23,7 +23,7 @@ public class TpacceptCommand {
     }
 
     @Execute
-    public void execute(@Context Player who, @Arg("nazwa_gracza") Player target) {
+    public void execute(@Context Player who, @Arg("od_kogo_prośba") Player target) {
         if (who.getUniqueId().equals(target.getUniqueId())) {
             who.sendMessage(StringUtil.textFormatting(MainOcTPA.instance().getPluginConfig().getTranslations("tp-to-himself")));
             return;

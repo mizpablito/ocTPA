@@ -9,16 +9,24 @@
 #
 
 ## PODSTAWOWE USTAWIENIA
-plugin-debug: true
+plugin-debug: false
 # Można go użyć w tłumaczeniach jako tag <prefix>
 plugin-prefix: "<gold>[<dark_green>oc<white>TegesTeleport<gold>]"
 # Można go użyć w tłumaczeniach jako tag <miniprefix>
 plugin-mini-prefix: "<gold>[<dark_green>TP</dark_green>]"
 
 teleportation-settings:
-  cmd-enabled:
-    tpreturn: true
-    tphere: true
+  function-enabled:
+    tpreturn: false
+    tphere: false
+
+  # czy uruchomić dodatkowe komendy (aliasy)
+  cmd-aliases:
+    tpakceptuje: true
+    tpanuluj: true
+    tpodrzucam: true
+    tppowrot: false
+    tptutaj: false
   # czas podany w sekundach
   times:
     timeout:
@@ -32,6 +40,23 @@ teleportation-settings:
       # Czas przez jaki nie będzie można ponownie użyć komendy
       reuse-cmd-tpa: 60
       reuse-cmd-tpaHere: 60
+  # bezpieczna teleportacja
+  safe-position:
+    enabled: true
+    # promień od pozycji docelowego gracza
+    maxRadius: 10
+    # ilość prób znalezienia bezpiecznego miejsca
+    maxTries: 5
+    # lista niebezpiecznych bloków
+    dangerous-blocks:
+      - CACTUS
+      - MAGMA_BLOCK
+      - POWDER_SNOW
+      - LAVA
+      - WATER
+      - AIR
+      - KELP
+
   # TODO:
   # - do wdrożenia w kolejnej iteracji, jeśli będzie potrzebne
   #  # Zabroń teleportacji dla wskazanych światów
@@ -72,47 +97,77 @@ teleportation-effects:
 ## Tłumaczenia
 # Użyteczny tool: https://webui.advntr.dev/
 translation:
-  request-sent: "<green>Prośba o teleport została wysłana do <gold>%playername%</gold>. Gracz ma <gold>%seconds% sekund</gold> na jej zaakceptowanie."
-  request-return: "<prefix><green>Nastąpił powrót do ostatniej lokalizacji."
-  request-received: "<green>Otrzymano prośbę o teleport od <gold>%playername%</gold>, która wygaśnie za <gold>%seconds% sekund</gold>."
-  request-accept: "<yellow>Wpisz (<i>lub kliknij</i>) <dark_green><click:run_command:'/tpakceptuje'>/tpakceptuje</click></dark_green> aby zaakceptować prośbę."
-  request-deny: "<yellow>Wpisz (<i>lub kliknij</i>) <dark_red><click:run_command:'/tpodrzucam'>/tpodrzucam</click></dark_red> aby odrzucić prośbę."
-  request-denied-by: "<prefix><red>Teleportacja została odrzucona przez <gold>%playername%</gold>."
-  request-denied: "<prefix><red>Prośba o teleport od <gold>%playername%</gold> została odrzucona."
-  request-warning-tpa-here: "<dark_red>Uwaga:</dark_red> <red>zaakceptowanie tej prośby spowoduje teleportację do <gold>%playername%</gold>."
+  # --- 1. WYSYŁANIE I ODBIERANIE PROŚBY ---
+  request-sent: "<prefix><green>Prośba o teleport została wysłana do <gold>%playername%</gold>. Gracz ma <gold>%seconds% sekund</gold> na jej zaakceptowanie."
+  request-received: "<prefix><green>Otrzymano prośbę o teleport od <gold>%playername%</gold>, która wygaśnie za <gold>%seconds% sekund</gold>."
+  request-warning-tpa-here: "<prefix><dark_red>Uwaga:</dark_red> <red>zaakceptowanie tej prośby spowoduje teleportację do <gold>%playername%</gold>."
+
+  # Komendy akceptacji/odrzucenia (interaktywne)
+  request-accept-deny: "<yellow>Wpisz <dark_green><click:run_command:'/teleportacja tak'>/teleportacja tak</click></dark_green> aby przyjąć, <dark_red><click:run_command:'/teleportacja nie'>/teleportacja nie</click></dark_red> aby odrzucić"
+
+  # --- 2. REAKCJA NA PROŚBĘ (Status) ---
   request-accepted: "<prefix><green>Prośba o teleport od <gold>%playername%</gold> została zaakceptowana."
+  request-denied: "<prefix><red>Prośba o teleport od <gold>%playername%</gold> została odrzucona."
+  request-denied-by: "<prefix><red>Teleportacja została odrzucona przez <gold>%playername%</gold>."
   request-canceled: "<prefix><yellow>Teleportacja została anulowana."
   request-canceled-by: "<prefix><red>Teleportacja została anulowana przez <gold>%playername%</gold>."
+
+  # --- 3. PRZETWARZANIE I COOLDOWN (Oczekiwanie) ---
+  # Teleportacja JA -> KTOŚ
+  request-cooldown-to: "<prefix><yellow>Należy pozostać nieruchomo przez <red>%time% sekund</red>, aby nastąpiła teleportacja do <gold>%playername%</gold>."
+  # Teleportacja KTOŚ -> JA (tpa here)
+  request-cooldown-to-here: "<prefix><yellow>Należy pozostać nieruchomo przez <red>%time% sekund</red>, aby <gold>%playername%</gold> został przeteleportowany do Ciebie."
+  # Informacja dla drugiej strony
+  request-cooldown-from: "<prefix><gold>%playername% <yellow>zostanie przeteleportowany w ciągu <red>%time% sekund</red>."
+  request-cooldown-from-here: "<prefix><yellow>Teleportacja do <gold>%playername%</gold> nastąpi w ciągu <red>%time% sekund</red>."
+  # Powrót (/teleportaca powrot)
+  request-cooldown-return: "<prefix><yellow>Powrót nastąpi za <red>%time% sekund</red>. Należy pozostać nieruchomo."
+
+  # Anulowanie z powodu ruchu
   request-moved-to: "<prefix><yellow>Teleportacja do <gold>%playername%</gold> została anulowana z powodu ruchu."
   request-moved-from: "<prefix><yellow>Teleportacja została anulowana, ponieważ <gold>%playername%</gold> się poruszył."
-  request-moved-return: "<prefix><yellow>Teleportacja została anulowana z powodu ruchu."
+  request-moved-return: "<prefix><yellow>Teleportacja powrotna została anulowana z powodu ruchu."
+
+  # --- 4. WYGASANIE (Timeout) ---
   request-timeout-to: "<prefix><blue>Prośba o teleport do <gold>%playername%</gold> wygasła."
   request-timeout-from: "<prefix><blue>Prośba o teleport od <gold>%playername%</gold> wygasła."
-  request-teleported-to: "<prefix><green>Teleportacja do <gold>%playername%</gold> zakończona."
-  request-teleported-from: "<prefix><gold>%playername% <green>został przeteleportowany."
-  request-cooldown-to: "<prefix><yellow>Należy pozostać nieruchomo przez <red>%time% sekund</red>, aby nastąpiła teleportacja do <gold>%playername%</gold>."
-  request-cooldown-to-here: "<prefix>Należy pozostać nieruchomo przez %time% sekund, aby %playername% został przeteleportowany."
-  request-cooldown-from: "<prefix><gold>%playername% <yellow>zostanie przeteleportowany w ciągu <red>%time% sekund</red>."
-  request-cooldown-from-here: "<prefix>Teleportacja do %playername% nastąpi w ciągu %time% sekund."
-  request-cooldown-return: "<prefix>Powrót nastąpi za %time% sekund. Należy pozostać nieruchomo."
+  request-return: "<prefix><green>Nastąpił powrót do ostatniej lokalizacji."
+  request-return-timeout: "<prefix><blue>Czas na powrót do poprzedniej lokalizacji minął."
+
+  # --- 5. BEZPIECZEŃSTWO (Nowe) ---
+  request-unsafe-destination: "<prefix><red>Teleportacja anulowana! Miejsce docelowe nie jest bezpieczne."
+  request-unsafe-destination-other: "<prefix><red>Teleportacja anulowana! Gracz nie mógł bezpiecznie dotrzeć do Twojej lokalizacji."
+
+  # --- 6. EKONOMIA ---
+  economy-not-enough-money: "<prefix><red>Koszt teleportacji to <gold>%cost%</gold>. Nie posiadasz tyle na koncie!"
+  economy-free-teleportation: "<green>Wszystkie teleportacje w pluginie są darmowe!"
+  # Sytuacja, gdy gracz miał kasę przy wpisaniu komendy, ale wydał ją zanim cooldown minął:
+  economy-not-enough-money-after-accepted: "<prefix><red>Teleportacja anulowana. Stan konta zmienił się w trakcie oczekiwania i brakuje środków: <gold>%cost%</gold>."
+  request-canceled-not-enough-money-from: "<prefix><red>Teleportacja została anulowana z powodu niewystarczającej ilości vTegesów na koncie <gold>%playername%</gold>."
+  request-canceled-not-enough-money-to: "<prefix><red>Teleportacja do <gold>%playername%</gold> została anulowana z powodu niewystarczającej ilości vTegesów na Twoim koncie!"
+
+  economy-withdraw-success: "<prefix><green>Za teleportację pobrano <gold>%cost%</gold>. Na Twoim koncie pozostało <gold>%balance%</gold>."
+  economy-error-while-processing-costs: "<prefix><dark_red>Wystąpił błąd podczas próby pobrania kosztu teleportacji! <red>Jeśli problem się powtarza, zgłoś go do administracji!"
+  economy-service-not-loaded: "<prefix><dark_red>Serwis obsługujący koszty teleportacji jest wyłączony."
+
+  # --- 7. SUKCES ---
+  request-teleported-to: "<prefix><green>Teleportacja do <gold>%playername%</gold> zakończona pomyślnie."
+  request-teleported-from: "<prefix><gold>%playername% <green>został przeteleportowany do Ciebie."
+  request-teleported-return: "<prefix><green>Pomyślnie wrócono do poprzedniej lokalizacji."
+
+  # --- 8. BŁĘDY OGÓLNE ---
   request-error-not-found: "<prefix><yellow>Brak oczekujących próśb."
-  request-error-not-found-by: "<prefix><yellow>Brak oczekującej prośby od %playername%."
-  request-error-return-not-found: "<prefix><yellow>Brak miejsca powrotu lub czas wygasł."
+  request-error-not-found-by: "<prefix><yellow>Brak oczekującej prośby od <gold>%playername%</gold>."
+  request-error-return-not-found: "<prefix><yellow>Brak zapisanego miejsca powrotu lub czas powrotu wygasł."
   request-error-cooldown: "<prefix><red>Należy poczekać <yellow>%seconds% sekund</yellow> przed wysłaniem kolejnej prośby o teleport."
   request-error-pending: "<prefix><red>Istnieje już oczekująca prośba."
-  request-canceled-not-enough-money-from: "<prefix><red>Teleportacja została anulowana z powodu niewystarczającej ilości kasy na konice <gold>%playername%</gold>"
-  request-canceled-not-enough-money-to: "<prefix><red>Teleportacja do <gold>%playername%</gold> została anulowana z powodu niewystarczającej ilości kasy na Twoim koncie!"
-  economy-not-enough-money: "<prefix><red>Koszt teleportacji to <gold>%cost%</gold>. Nie posiadasz tyle na koncie!"
-  economy-not-enough-money-after-accepted: "<prefix><red>Żądanie teleportacji zostało zaakceptowane, ale w między czasie zmienił się Twój stan konta i nie posiadasz wystarczającej kwoty - <gold>%cost%</gold>"
-  economy-error-while-processing-costs: "<prefix><dark_red>Wystąpił błąd podczas próby pobrania kosztu teleportacji! <red>Jeśli problem się powtarza, zgłość go do administracji!"
-  economy-service-not-loaded: "<prefix><dark_red>Serwis obsługujący koszty teleportacji jest wyłączony."
-  economy-withdraw-success: "<prefix><green>Za teleportację pobrano <gold>%cost%</gold>. Na Twoim koncie pozostało <gold>%balance%</gold>."
 
   #Pozostałe
   header-line: "<prefix><yellow><bold>==============================="
+  header-line-help: "<prefix><yellow><bold>=========== POMOC ==========="
   footer-line: "" #"<yellow><bold>============================================="
   feature-disabled: "<prefix><red>Ta funkcja jest aktualnie wyłączona!"
-  tp-to-himself: "<prefix><red>Nie możesz teleportować się sam do siebie, bo po co!?"
+  tp-to-himself: "<prefix><red>Nie możesz żądać teleportacji do samego siebie, bo po co!?"
   help-cmd-oneline: "<prefix><red>Błędne użycie komendy <yellow>%command%</yellow> !"
   help-cmd-multiline-header: "<prefix><red>Błędne użycie komendy!"
   help-cmd-multiline-command: "<dark_gray> - <yellow>%command%"

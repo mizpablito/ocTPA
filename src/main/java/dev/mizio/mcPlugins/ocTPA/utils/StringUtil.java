@@ -2,7 +2,6 @@ package dev.mizio.mcPlugins.ocTPA.utils;
 
 import dev.mizio.mcPlugins.ocTPA.MainOcTPA;
 import net.kyori.adventure.text.Component;
-import net.kyori.adventure.text.event.HoverEvent;
 import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.minimessage.Context;
 import net.kyori.adventure.text.minimessage.MiniMessage;
@@ -15,11 +14,21 @@ import java.util.Map;
 
 public class StringUtil {
 
-    private final static Component hoverContent = Component.text()
+    public final static Component PLUGIN_INFO_COMPONENT = Component.text()
             .append(Component.text("Dla ", NamedTextColor.YELLOW))
             .append(Component.text("open",  NamedTextColor.WHITE))
             .append(Component.text("Craft", NamedTextColor.DARK_GREEN))
-            .append(Component.newline())
+
+            .append(Component.text(" | ", NamedTextColor.GRAY))
+
+            .append(Component.text("Wersja: ", NamedTextColor.YELLOW))
+            .append(Component.text(
+                    MainOcTPA.instance().getPluginMeta().getVersion(),
+                    NamedTextColor.DARK_GREEN
+            ))
+
+            .append(Component.text(" | ", NamedTextColor.GRAY))
+
             .append(Component.text(
                     MainOcTPA.instance().getPluginMeta().getAuthors().size() == 1
                             ? "Autor: "
@@ -30,30 +39,21 @@ public class StringUtil {
                     String.join(", ", MainOcTPA.instance().getPluginMeta().getAuthors()),
                     NamedTextColor.WHITE
             ))
-            .append(Component.newline())
-            .append(Component.text("Wersja: ", NamedTextColor.YELLOW))
-            .append(Component.text(
-                    MainOcTPA.instance().getPluginMeta().getVersion(),
-                    NamedTextColor.DARK_GREEN
-            ))
+            .appendNewline()
             .build();
 
     public static Tag prefixTag(final ArgumentQueue args, final Context ctx) {
         String rawPrefix     = MainOcTPA.instance().getPluginConfig().getPluginPrefix();
         Component mmPrefix   = ctx.deserialize(rawPrefix);
 
-        return Tag.selfClosingInserting(
-                mmPrefix.hoverEvent(HoverEvent.showText(hoverContent)).append(Component.space())
-        );
+        return Tag.selfClosingInserting(mmPrefix.append(Component.space()));
     }
 
     public static Tag miniPrefixTag(final ArgumentQueue args, final Context ctx) {
         String rawPrefix     = MainOcTPA.instance().getPluginConfig().getPluginMiniPrefix();
         Component mmPrefix   = ctx.deserialize(rawPrefix);
 
-        return Tag.selfClosingInserting(
-                mmPrefix.hoverEvent(HoverEvent.showText(hoverContent)).append(Component.space())
-        );
+        return Tag.selfClosingInserting(mmPrefix.append(Component.space()));
     }
 
     public static Component textFormatting(String text) {

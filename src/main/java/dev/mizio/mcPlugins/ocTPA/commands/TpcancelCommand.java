@@ -11,7 +11,7 @@ import static dev.mizio.mcPlugins.ocTPA.PluginConfig.PERMS_CMD_TPCANCEL;
 /**
  * Komenda anulująca żądanie teleportacji do gracza
  */
-@Command(name = "tpanuluj", aliases = {"tpcancel"} )
+@Command(name = "tpanuluj")
 @Permission(PERMS_CMD_TPCANCEL)
 public class TpcancelCommand {
 

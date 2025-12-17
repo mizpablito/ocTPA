@@ -15,13 +15,13 @@ import static dev.mizio.mcPlugins.ocTPA.PluginConfig.PERMS_CMD_TPRETURN;
 /**
  * Komenda pozwalająca na powrót do poprzedniej lokalizacji
  */
-@Command(name = "tpreturn", aliases = {"tpback"}, strict = StrictMode.ENABLED)
+@Command(name = "tppowrot", strict = StrictMode.ENABLED)
 @Permission(PERMS_CMD_TPRETURN)
 public class TpreturnCommand {
 
     @Execute
     public void execute(@Context Player player) {
-        if (!MainOcTPA.instance().getPluginConfig().isTpSetting_cmdEnabled_tpreturn()) {
+        if (!MainOcTPA.instance().getPluginConfig().isTpSetting_functionEnabled_tpreturn()) {
             player.sendMessage(StringUtil.textFormatting(
                     MainOcTPA.instance().getPluginConfig().getTranslations("feature-disabled")
             ));
