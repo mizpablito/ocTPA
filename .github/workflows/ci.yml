@@ -38,5 +38,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `✅ **Build zakończony sukcesem**\n\n📦 **Artefakt do pobrania:**\n👉 ${runUrl}\n\nKliknij w sekcji **Artifacts** na `ocTPA-dev` i pobierz paczkę ZIP z plikami JAR.`
+              body: `✅ **Build zakończony sukcesem**\n\n📦 **Artefakt do pobrania:**\n👉 ${runUrl}\n\nKliknij w sekcji **Artifacts** na **ocTPA-dev** i pobierz paczkę ZIP z plikami JAR.`
             });
