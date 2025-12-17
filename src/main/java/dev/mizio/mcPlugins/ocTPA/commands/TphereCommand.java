@@ -15,13 +15,13 @@ import static dev.mizio.mcPlugins.ocTPA.PluginConfig.PERMS_CMD_TPHERE;
 /**
  * Komenda tworząca żądanie teleportacji wskazanego gracza do siebie
  */
-@Command(name = "tphere", aliases = {"tptutaj"}, strict = StrictMode.ENABLED)
+@Command(name = "tptutaj", strict = StrictMode.ENABLED)
 @Permission(PERMS_CMD_TPHERE)
 public class TphereCommand {
 
     @Execute
     public void execute(@Context Player who, @Arg("nazwa_gracza") Player target) {
-        if (!MainOcTPA.instance().getPluginConfig().isTpSetting_cmdEnabled_tphere()) {
+        if (!MainOcTPA.instance().getPluginConfig().isTpSetting_functionEnabled_tphere()) {
             who.sendMessage(StringUtil.textFormatting(
                     MainOcTPA.instance().getPluginConfig().getTranslations("feature-disabled")
             ));

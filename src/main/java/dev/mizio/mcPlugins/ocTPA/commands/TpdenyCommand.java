@@ -13,7 +13,7 @@ import static dev.mizio.mcPlugins.ocTPA.PluginConfig.PERMS_CMD_TPDENY;
 /**
  * Komenda odrzucająca teleportację przez docelowego gracza
  */
-@Command(name = "tpodrzucam", aliases = {"tpdeny"} )
+@Command(name = "tpodrzucam")
 @Permission(PERMS_CMD_TPDENY)
 public class TpdenyCommand {
 
@@ -23,7 +23,7 @@ public class TpdenyCommand {
     }
 
     @Execute
-    public void execute(@Context Player who, @Arg("nazwa_gracza") Player target) {
+    public void execute(@Context Player who, @Arg("od_kogo_prośba") Player target) {
         if (who.getUniqueId().equals(target.getUniqueId())) {
             who.sendMessage(StringUtil.textFormatting(MainOcTPA.instance().getPluginConfig().getTranslations("tp-to-himself")));
             return;

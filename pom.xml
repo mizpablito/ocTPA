@@ -6,12 +6,13 @@
 
     <groupId>dev.mizio.mcPlugins</groupId>
     <artifactId>ocTPA</artifactId>
-    <version>1.0.1</version>
+    <version>${revision}</version>
     <packaging>jar</packaging>
 
     <name>ocTPA</name>
 
     <properties>
+        <revision>1.1.0</revision>
         <java.version>21</java.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
@@ -90,7 +91,7 @@
         <dependency>
             <groupId>io.papermc.paper</groupId>
             <artifactId>paper-api</artifactId>
-            <version>1.21.10-R0.1-SNAPSHOT</version>
+            <version>1.21.11-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
 <!--        <dependency>-->

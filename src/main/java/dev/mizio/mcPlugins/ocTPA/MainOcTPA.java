@@ -1,6 +1,7 @@
 package dev.mizio.mcPlugins.ocTPA;
 
 import dev.mizio.mcPlugins.ocTPA.commands.*;
+import dev.mizio.mcPlugins.ocTPA.commands.handlers.PendingRequestsSuggester;
 import dev.mizio.mcPlugins.ocTPA.commands.handlers.PluginInvalidUsageCmdHandler;
 import dev.mizio.mcPlugins.ocTPA.listenings.PlayerDamageListener;
 import dev.mizio.mcPlugins.ocTPA.listenings.PlayerMoveListener;
@@ -11,6 +12,7 @@ import dev.mizio.mcPlugins.ocTPA.services.TeleportationService;
 import dev.mizio.mcPlugins.ocTPA.utils.StringUtil;
 import dev.rollczi.litecommands.LiteCommands;
 import dev.rollczi.litecommands.adventure.LiteAdventureExtension;
+import dev.rollczi.litecommands.argument.ArgumentKey;
 import dev.rollczi.litecommands.bukkit.LiteBukkitFactory;
 import dev.rollczi.litecommands.bukkit.LiteBukkitMessages;
 import dev.rollczi.litecommands.time.DurationParser;
@@ -20,7 +22,12 @@ import net.kyori.adventure.text.minimessage.MiniMessage;
 import net.kyori.adventure.text.minimessage.tag.resolver.TagResolver;
 import net.kyori.adventure.text.minimessage.tag.standard.StandardTags;
 import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Supplier;
 
 public final class MainOcTPA extends JavaPlugin {
 
@@ -77,17 +84,27 @@ public final class MainOcTPA extends JavaPlugin {
         }
     }
 
+    private void registerIf(List<Object> commands, boolean condition, Supplier<Object> supplier) {
+        if (condition) {
+            commands.add(supplier.get());
+        }
+    }
+
     private void registerCommands() {
+        List<Object> commands = new ArrayList<>();
+        commands.add(new TpaCommand());
+
+        registerIf(commands, pluginConfig.isTpSetting_cmdAliases_tpaccept(), TpacceptCommand::new);
+        registerIf(commands, pluginConfig.isTpSetting_cmdAliases_tpcancel(), TpcancelCommand::new);
+        registerIf(commands, pluginConfig.isTpSetting_cmdAliases_tpdeny(), TpdenyCommand::new);
+        registerIf(commands, pluginConfig.isTpSetting_cmdAliases_tphere(), TphereCommand::new);
+        registerIf(commands, pluginConfig.isTpSetting_cmdAliases_tpreturn(), TpreturnCommand::new);
+
+
         this.liteCommands = LiteBukkitFactory.builder("octpa", this)
-                .commands(
-                        new TpaCommand(),
-                        new TpacceptCommand(),
-                        new TpcancelCommand(),
-                        new TpdenyCommand(),
-                        new TphereCommand(),
-                        new TpreturnCommand(),
-                        new OcTpaCommand() //TODO: po testach wyłączyć
-                )
+                .commands(commands.toArray(new Object[0]))
+                .argumentSuggester(Player.class, ArgumentKey.of("od_kogo_prośba"), new PendingRequestsSuggester())
+                .invalidUsage(new PluginInvalidUsageCmdHandler())
                 .extension(new LiteAdventureExtension<>(), config -> config
                         .miniMessage(true)
                         .legacyColor(true)
@@ -96,9 +113,9 @@ public final class MainOcTPA extends JavaPlugin {
                                 .tags(TagResolver.builder()
                                         .resolver(StandardTags.defaults()).build())
                                 .editTags(b -> b.tag("prefix", StringUtil::prefixTag))
+                                .editTags(b -> b.tag("miniprefix", StringUtil::miniPrefixTag))
                                 .build())
                 )
-                .invalidUsage(new PluginInvalidUsageCmdHandler())
                 .message(LiteBukkitMessages.PLAYER_ONLY, pluginConfig.getTranslations("player-only"))
                 .message(LiteBukkitMessages.PLAYER_NOT_FOUND, player -> String.format(pluginConfig.getTranslations("player-not-found"), player))
                 .message(LiteBukkitMessages.OFFLINE_PLAYER_NOT_FOUND, player -> String.format(pluginConfig.getTranslations("offlinePlayer-not-found"), player))

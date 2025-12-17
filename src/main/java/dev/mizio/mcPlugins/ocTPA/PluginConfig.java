@@ -2,11 +2,14 @@ package dev.mizio.mcPlugins.ocTPA;
 
 import lombok.AccessLevel;
 import lombok.Getter;
+import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.FileConfiguration;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 @Getter
 public class PluginConfig {
@@ -30,8 +33,13 @@ public class PluginConfig {
     private String pluginMiniPrefix;
 
     // Section teleportation-settings
-    private boolean tpSetting_cmdEnabled_tpreturn;
-    private boolean tpSetting_cmdEnabled_tphere;
+    private boolean tpSetting_functionEnabled_tpreturn;
+    private boolean tpSetting_functionEnabled_tphere;
+    private boolean tpSetting_cmdAliases_tpaccept;
+    private boolean tpSetting_cmdAliases_tpcancel;
+    private boolean tpSetting_cmdAliases_tpdeny;
+    private boolean tpSetting_cmdAliases_tpreturn;
+    private boolean tpSetting_cmdAliases_tphere;
     private int tpSetting_times_timeout_acceptance;
     private int tpSetting_times_timeout_return;
     private int tpSetting_time_cooldown_after_accept;
@@ -42,6 +50,12 @@ public class PluginConfig {
     private String tpSetting_cost_currency;
     private double tpSetting_cost_amount;
     private double tpSetting_cost_return_amount;
+
+    // safe teleportation position
+    private boolean tpSetting_safePosition_enabled;
+    private int tpSetting_safePosition_maxRadius;
+    private int tpSetting_safePosition_maxTries;
+    private List<Material> tpSetting_safePosition_dangerousBlocks = new ArrayList<>();
 
     // Section teleportation-effects
     private boolean tpEffects_sound_enabled;
@@ -85,8 +99,14 @@ public class PluginConfig {
         pluginPrefix = config.getString("plugin-prefix", "<gold>[<dark_green>oc<white>TPA<gold>]");
         pluginMiniPrefix = config.getString("plugin-mini-prefix", "<gold>[<dark_green>TP</dark_green>]");
 
-        tpSetting_cmdEnabled_tpreturn = config.getBoolean("teleportation-settings.cmd-enabled.tpreturn", true);
-        tpSetting_cmdEnabled_tphere = config.getBoolean("teleportation-settings.cmd-enabled.tphere", true);
+        tpSetting_functionEnabled_tpreturn = config.getBoolean("teleportation-settings.function-enabled.tpreturn", true);
+        tpSetting_functionEnabled_tphere = config.getBoolean("teleportation-settings.function-enabled.tphere", true);
+
+        tpSetting_cmdAliases_tpaccept = config.getBoolean("teleportation-settings.cmd-aliases.tpakceptuje", false);
+        tpSetting_cmdAliases_tpcancel = config.getBoolean("teleportation-settings.cmd-aliases.tpanuluj", false);
+        tpSetting_cmdAliases_tpdeny = config.getBoolean("teleportation-settings.cmd-aliases.tpodrzucam", false);
+        tpSetting_cmdAliases_tpreturn = config.getBoolean("teleportation-settings.cmd-aliases.tppowrot", false);
+        tpSetting_cmdAliases_tphere = config.getBoolean("teleportation-settings.cmd-aliases.tptutaj", false);
 
         tpSetting_times_timeout_acceptance = config.getInt("teleportation-settings.times.timeout.acceptance", 60);
         tpSetting_times_timeout_return = config.getInt("teleportation-settings.times.timeout.return", 60);
@@ -100,6 +120,14 @@ public class PluginConfig {
         tpSetting_cost_currency = config.getString("teleportation-settings.cost.currency");
         tpSetting_cost_amount = config.getDouble("teleportation-settings.cost.amount");
         tpSetting_cost_return_amount = config.getDouble("teleportation-settings.cost.return-amount");
+
+        tpSetting_safePosition_enabled = config.getBoolean("teleportation-settings.safe-position.enabled", true);
+        tpSetting_safePosition_maxRadius = config.getInt("teleportation-settings.safe-position.max-radius", 10);
+        tpSetting_safePosition_maxTries = config.getInt("teleportation-settings.safe-position.max-tries", 5);
+
+        for (String name : config.getStringList("teleportation-settings.safe-position.dangerous-blocks")) {
+            tpSetting_safePosition_dangerousBlocks.add(Material.valueOf(name));
+        }
 
         tpEffects_sound_enabled = config.getBoolean("teleportation-effects.sound.enabled", true);
         tpEffects_sound_name = config.getString("teleportation-effects.sound.name", "ENTITY_EXPERIENCE_ORB_PICKUP");

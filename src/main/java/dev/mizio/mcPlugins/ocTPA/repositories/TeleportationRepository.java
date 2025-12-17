@@ -7,11 +7,15 @@ import dev.mizio.mcPlugins.ocTPA.services.entities.TeleportRequest;
 import dev.mizio.mcPlugins.ocTPA.utils.StringUtil;
 import net.kyori.adventure.text.Component;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.Collectors;
 
 public class TeleportationRepository {
@@ -111,13 +115,41 @@ public class TeleportationRepository {
             if (request.isTeleporting() && (request.getWarmUpSinceTimestamp() + (warmUpTime * 1000) <= System.currentTimeMillis()
                     || sender.hasPermission(PluginConfig.PERMS_BYPASS_COOLDOWN))) {
 
+                // Safe position (Start)
+                Location finalLocation = teleportPlayerTo.getLocation();
+
+                if (plugin.getPluginConfig().isTpSetting_safePosition_enabled()) {
+                    plugin.debugInfo("[processTeleport] Szukanie bezpiecznej pozycji...");
+                    Location safeLoc = tryFindSafeLocation(finalLocation);
+
+                    if (safeLoc == null) {
+                        plugin.debugInfo("[processTeleport] Nie udało się znaleźć bezpiecznego miejsca dla " + teleportPlayer.getName());
+
+                        teleportPlayer.sendMessage(StringUtil.textFormatting(
+                            plugin.getPluginConfig().getTranslations("request-unsafe-destination")
+                        ));
+
+                        // Opcjonalnie powiadom drugą stronę
+                        teleportPlayerTo.sendMessage(StringUtil.textFormatting(
+                            plugin.getPluginConfig().getTranslations("request-unsafe-destination-other")
+                        ));
+
+                        requests.remove(request);
+                        continue;
+                    }
+                    finalLocation = safeLoc;
+                }
+                // Safe position (End)
+
                 // Koszty teleportacji
+                Player costSource = request.isHereRequest() ? sender : teleportPlayer;
+
                 if (plugin.economyService().isFreeTeleport(false)) {
-                    plugin.debugInfo("[processTeleport] Teleportacja darmowa, ponieważ w configu koszt teleportacji wynosi <= 0 albo Repo Ekonomii nie zostało załadowane!");
+                    plugin.debugInfo("[processTeleport] Teleportacja darmowa, ponieważ koszt <= 0 albo brak ekonomii!");
                 } else {
                     plugin.debugInfo("[processTeleport] Koszt teleportacji jest dodatni, sprawdzanie czy gracz ma wystarczająco kasy...");
-                    if (!plugin.economyService().hasEnough(teleportPlayer,false)) {
-                        teleportPlayer.sendMessage(StringUtil.textFormatting(
+                    if (!plugin.economyService().hasEnough(costSource, false)) {
+                        costSource.sendMessage(StringUtil.textFormatting(
                                 plugin.getPluginConfig().getTranslations("economy-not-enough-money-after-accepted"),
                                 Map.of("cost", plugin.economyService().getCostOfTeleportation(false))
                         ));
@@ -127,18 +159,18 @@ public class TeleportationRepository {
                     }
                 }
 
-                if (!plugin.economyService().withdraw(teleportPlayer, false)) {
-                    teleportPlayer.sendMessage(StringUtil.textFormatting(
+                if (!plugin.economyService().withdraw(costSource, false)) {
+                    costSource.sendMessage(StringUtil.textFormatting(
                             plugin.getPluginConfig().getTranslations("economy-error-while-processing-costs")
                     ));
-                    plugin.debugInfo("[processTeleport] Żądanie od " + request.getSender() + " do " + request.getReceiver()  + " zostało anulowane z powodu problemu pobrania kosztów teleportacji z konta.");
+                    plugin.debugInfo("[processTeleport] Żądanie od " + request.getSender() + " do " + request.getReceiver() + " zostało anulowane z powodu problemu pobrania kosztów teleportacji z konta.");
                     continue;
                 } else {
-                    teleportPlayer.sendMessage(StringUtil.textFormatting(
+                    costSource.sendMessage(StringUtil.textFormatting(
                             plugin.getPluginConfig().getTranslations("economy-withdraw-success"),
                             Map.of(
                                     "cost", plugin.economyService().getCostOfTeleportation(false),
-                                    "balance", plugin.economyService().getActuallyAccountBalance(teleportPlayer)
+                                    "balance", plugin.economyService().getActuallyAccountBalance(costSource)
                             )
                     ));
                 }
@@ -152,6 +184,8 @@ public class TeleportationRepository {
                         Map.of("playername", teleportPlayer.getName())
                 ));
 
+                Location teleportTarget = finalLocation;
+
                 new BukkitRunnable() {
                     public void run() {
                         var returnRequest = new ReturnRequest(
@@ -160,7 +194,8 @@ public class TeleportationRepository {
                                 System.currentTimeMillis()
                         );
                         returnRequests.put(teleportPlayer.getUniqueId(), returnRequest);
-                        teleportPlayer.teleport(teleportPlayerTo);
+
+                        teleportPlayer.teleport(teleportTarget);
                         plugin.teleportEffectService().run(teleportPlayer);
                     }
                 }.runTask(plugin);
@@ -177,7 +212,9 @@ public class TeleportationRepository {
         for (var playerId : new ArrayList<>(returnRequests.keySet())) {
             var request = returnRequests.get(playerId);
             var teleportPlayer = Bukkit.getPlayer(request.getPlayerId());
+
             if (teleportPlayer == null) {
+                returnRequests.remove(playerId);
                 continue;
             }
 
@@ -189,7 +226,13 @@ public class TeleportationRepository {
                 var timeout = plugin.getPluginConfig().getTpSetting_times_timeout_return();
 
                 if (!hasBypassReturnTimeout && timeout > 0 && request.isTimedOut(timeout)) {
-                    plugin.debugInfo("[processReturn] Żądanie powrotu dla " + request.getPlayerId() + " wygasło (przekroczono czas).");
+                    plugin.debugInfo("[processReturn] Żądanie powrotu dla " + teleportPlayer.getName() + " (" + request.getPlayerId() + ") wygasło (przekroczono czas na wpisanie /teleportacja powrot).");
+
+//                    // Opcjonalnie: wyślij wiadomość, że szansa na powrót przepadła
+//                    teleportPlayer.sendMessage(StringUtil.textFormatting(
+//                            plugin.getPluginConfig().getTranslations("request-return-timeout")
+//                    ));
+
                     returnRequests.remove(playerId);
                 }
                 continue;
@@ -209,30 +252,51 @@ public class TeleportationRepository {
             long fulfillRequestAt = request.getWarmUpSinceTimestamp() + (warmUpTime * 1000);
             if (isTeleporting && (fulfillRequestAt <= System.currentTimeMillis() || hasBypassWait)) {
 
+                // Safe position (Start)
+                Location finalLocation = request.getLocation();
+
+                if (plugin.getPluginConfig().isTpSetting_safePosition_enabled()) {
+                    plugin.debugInfo("[processReturn] Szukanie bezpiecznej pozycji dla powrotu...");
+                    Location safeLoc = tryFindSafeLocation(finalLocation);
+
+                    if (safeLoc == null) {
+                        plugin.debugInfo("[processReturn] Nie udało się znaleźć bezpiecznego miejsca powrotu dla " + teleportPlayer.getName());
+
+                        teleportPlayer.sendMessage(StringUtil.textFormatting(
+                                plugin.getPluginConfig().getTranslations("request-unsafe-destination")
+                        ));
+
+                        returnRequests.remove(playerId);
+                        continue;
+                    }
+                    finalLocation = safeLoc;
+                }
+                // Safe position (End)
+
+
                 if (plugin.economyService().isFreeTeleport(true)) {
-                    plugin.debugInfo("[processTeleport] Teleportacja darmowa, ponieważ w configu koszt teleportacji wynosi <= 0 albo Repo Ekonomii nie zstało załadowane!");
+                    plugin.debugInfo("[processReturn] Teleportacja darmowa (config lub brak repo).");
                 } else {
-                    plugin.debugInfo("[processTeleport] Koszt teleportacji jest dodatni, sprawdzanie czy gracz ma wystarczająco kasy...");
-                    if (!plugin.economyService().hasEnough(teleportPlayer,true)) {
+                    plugin.debugInfo("[processReturn] Sprawdzanie stanu konta...");
+                    if (!plugin.economyService().hasEnough(teleportPlayer, true)) {
                         teleportPlayer.sendMessage(StringUtil.textFormatting(
                                 plugin.getPluginConfig().getTranslations("economy-not-enough-money-after-accepted"),
                                 Map.of("cost", plugin.economyService().getCostOfTeleportation(true))
                         ));
-                        requests.remove(request);
-                        plugin.debugInfo("[processTeleport] Żądanie powrotu dla " + request.getRequested() + " zostało anulowane z braku wystarczającej ilości kasy!");
+                        returnRequests.remove(playerId);
+                        plugin.debugInfo("[processReturn] Żądanie powrotu anulowane - brak środków.");
                         continue;
                     }
                 }
 
-                returnRequests.remove(playerId);
-
-                // pobieranie kosztów teleportacji
                 if (!plugin.economyService().withdraw(teleportPlayer, true)) {
                     teleportPlayer.sendMessage(StringUtil.textFormatting(
                             plugin.getPluginConfig().getTranslations("economy-error-while-processing-costs")
                     ));
-                    plugin.debugInfo("[processReturn] Żądanie powrotu dla " + request.getRequested() + " zostało anulowane z powodu problemu pobrania kosztów teleportacji z konta.");
+                    plugin.debugInfo("[processReturn] Błąd podczas pobierania środków.");
                     continue;
+                    // Tutaj NIE usuwamy requestu od razu, może to błąd chwilowy bazy danych?
+                    // Albo usuń returnRequests.remove(playerId) jeśli chcesz anulować.
                 } else {
                     teleportPlayer.sendMessage(StringUtil.textFormatting(
                             plugin.getPluginConfig().getTranslations("economy-withdraw-success"),
@@ -243,16 +307,24 @@ public class TeleportationRepository {
                     ));
                 }
 
+                returnRequests.remove(playerId);
                 returnedPlayers.add(request.getPlayerId());
+
+                Location teleportTarget = finalLocation;
 
                 new BukkitRunnable() {
                     public void run() {
-                        teleportPlayer.teleport(request.getLocation());
+                        teleportPlayer.teleport(teleportTarget);
                         plugin.teleportEffectService().run(teleportPlayer);
+
+                        // Opcjonalnie komunikat o sukcesie
+                        teleportPlayer.sendMessage(StringUtil.textFormatting(
+                                plugin.getPluginConfig().getTranslations("request-return")
+                        ));
                     }
                 }.runTask(plugin);
 
-                plugin.debugInfo("[processReturn] Żądanie powrotu dla " + request.getRequested() + " zostało zrealizowane.");
+                plugin.debugInfo("[processReturn] Gracz " + teleportPlayer.getName() + " wrócił na poprzednią pozycję.");
             }
         }
 
@@ -385,6 +457,51 @@ public class TeleportationRepository {
 
     public void cancelRequest(ReturnRequest request) {
         cancelRequest(request, StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-canceled")));
+    }
+
+    // Technical functions
+    private Location tryFindSafeLocation(Location origin) {
+        int radius = plugin.getPluginConfig().getTpSetting_safePosition_maxRadius();
+        int tries = plugin.getPluginConfig().getTpSetting_safePosition_maxTries();
+
+        if (isSafeLocation(origin)) {
+            return origin;
+        }
+
+        for (int i = 0; i < tries; i++) {
+            int xOffset = getRandomPos(-radius, radius);
+            int zOffset = getRandomPos(-radius, radius);
+
+            Location candidate = origin.clone().add(xOffset, 0, zOffset);
+
+            int highestY = candidate.getWorld().getHighestBlockYAt(candidate);
+            candidate.setY(highestY + 1);
+
+            if (isSafeLocation(candidate)) {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+    private int getRandomPos(final int min, final int max) {
+        return ThreadLocalRandom.current().nextInt(min, max + 1);
+    }
+
+    private boolean isSafeLocation(Location location) {
+        Material material = location.getBlock().getType();
+
+        if (material.equals(Material.AIR)) {
+            material = location.getBlock().getRelative(BlockFace.DOWN).getType();
+            // DEBUG
+            plugin.debugInfo("RelativeBlock(DOWN) is " + material.name());
+        }
+
+        if (plugin.getPluginConfig().getTpSetting_safePosition_dangerousBlocks().contains(material)) {
+            return false;
+        }
+
+        return true;
     }
 
 

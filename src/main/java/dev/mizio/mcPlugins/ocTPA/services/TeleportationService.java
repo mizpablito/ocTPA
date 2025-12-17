@@ -6,11 +6,15 @@ import dev.mizio.mcPlugins.ocTPA.repositories.TeleportationRepository;
 import dev.mizio.mcPlugins.ocTPA.services.entities.ReturnRequest;
 import dev.mizio.mcPlugins.ocTPA.services.entities.TeleportRequest;
 import dev.mizio.mcPlugins.ocTPA.utils.StringUtil;
+import dev.rollczi.litecommands.suggestion.SuggestionResult;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.UUID;
 
 
 public class TeleportationService {
@@ -86,8 +90,7 @@ public class TeleportationService {
                         "seconds", String.valueOf(plugin.getPluginConfig().getTpSetting_times_timeout_acceptance())
                 )
         ));
-        target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-accept")));
-        target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-deny")));
+        target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-accept-deny")));
         target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("footer-line")));
     }
 
@@ -151,8 +154,7 @@ public class TeleportationService {
                 plugin.getPluginConfig().getTranslations("request-warning-tpa-here"),
                 Map.of("playername",  requester.getName())
         ));
-        target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-accept")));
-        target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-deny")));
+        target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-accept-deny")));
         target.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("footer-line")));
     }
 
@@ -379,12 +381,12 @@ public class TeleportationService {
 
     public void playerQuitEvent(@NotNull Player player) {
         plugin.debugInfo("Usuwanie cooldownów i żądań dla " + player.getName() + ", ponieważ gracz opuścił serwer.");
-        // May be exploitable if the player leaves and rejoins the server before the cooldown ends
-        // But I don't think that's a big problem
-        // Memory footprint is a bit more important than making sure that they can never bypass the cooldown
+        // Może być podatne na wykorzystanie, jeśli gracz opuści serwer i dołączy do niego ponownie przed upływem czasu odnowienia.
+        // Ale nie sądzę, żeby to był duży problem.
+        // Zużycie pamięci jest nieco ważniejsze niż upewnienie się, że nigdy nie uda się ominąć czasu odnowienia.
         repository.removeCooldowns(player.getUniqueId());
 
-        // Remove all pending requests
+        // Usuń wszystkie oczekujące żądania
         repository.removeRequests(player.getUniqueId());
     }
 
@@ -399,6 +401,14 @@ public class TeleportationService {
         }
 
         returnRequest.setRequested();
-        player.sendMessage(StringUtil.textFormatting(plugin.getPluginConfig().getTranslations("request-return")));
+    }
+
+    public SuggestionResult getRequestsForPlayer(UUID playerId) {
+        return repository.getRequestsForPlayer(playerId).stream()
+                .map(TeleportRequest::getSender)       // Pobieramy UUID nadawcy
+                .map(Bukkit::getPlayer)                // Zamieniamy na Playera (może być null jeśli offline)
+                .filter(Objects::nonNull)              // Filtrujemy tylko graczy online
+                .map(Player::getName)                  // Pobieramy nick
+                .collect(SuggestionResult.collector()); // Zwracamy jako wynik podpowiedzi
     }
 }
